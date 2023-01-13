@@ -7,7 +7,7 @@ def assert_socket_blocked(result, passed=0, skipped=0, failed=1):
     Usually we only test for a single failure,
     but sometimes we want to test for multiple conditions,
     so we can pass in the expected counts."""
-    result.assert_outcomes(passed=passed, skipped=skipped, failed=failed)
+    result.assert_outcomes(passed=passed, skipped=skipped, failed=failed)    
     result.stdout.fnmatch_lines(
         "*Socket*Blocked*Error: A test tried to use socket.socket.*"
     )
@@ -52,6 +52,34 @@ def test_global_disable_via_cli_flag(testdir):
     )
     result = testdir.runpytest("--disable-socket")
     assert_socket_blocked(result)
+
+
+def test_global_enable_via_cli_flag(testdir):
+    testdir.makepyfile(
+        """
+        import socket
+        import pytest
+
+        @pytest.mark.disable_socket
+        def test_socket():
+            socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        """
+    )
+    result = testdir.runpytest("--enable-socket")
+    result.assert_outcomes(passed=1)
+
+
+def test_global_enable_cli_flag_precedence(testdir):
+    testdir.makepyfile(
+        """
+        import socket
+
+        def test_socket():
+            socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        """
+    )
+    result = testdir.runpytest("--disable-socket", "--enable-socket")
+    result.assert_outcomes(passed=1)
 
 
 def test_global_disable_via_config(testdir):
