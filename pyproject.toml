@@ -33,6 +33,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.7"
 pytest = ">=3.6.3"
+ipwhois = ">= 1.0.0"
 
 [tool.poetry.dev-dependencies]
 coverage = "^7.0"
