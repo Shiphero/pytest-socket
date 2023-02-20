@@ -1,6 +1,7 @@
 import ipaddress
 import socket
 from ipwhois import IPWhois
+from ipwhois.exceptions import HTTPLookupError, IPDefinedError
 
 import pytest
 
@@ -17,8 +18,11 @@ class SocketConnectBlockedError(RuntimeError):
     def __init__(self, allowed, host, *_args, **_kwargs):
         if allowed:
             allowed = ",".join(allowed)
-        ip_whois = IPWhois(host).lookup_rdap(depth=1)
-        host_description = ip_whois.get("asn_description", None)
+        try:
+            ip_whois = IPWhois(host).lookup_rdap(depth=1)
+            host_description = ip_whois.get("asn_description", None)
+        except (HTTPLookupError, IPDefinedError):
+            host_description = None
         host_text = f"{host} ({host_description})" if host_description else host
         super().__init__(
             "A test tried to use socket.socket.connect() "
